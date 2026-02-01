@@ -1,18 +1,17 @@
 module.exports = {
-  uiPort: process.env.PORT || 1880,
 
-  disableEditor: false,   // ปิดหน้า editor (แนะนำ)
+    // ⭐ สำคัญที่สุด
+    uiPort: process.env.PORT || 1880,
 
-  editorTheme: {
-    projects: {
-      enabled: true
-    }
-  },
+    // ⭐ เปิด editor
+    disableEditor: false,
 
-  adminAuth: null,
-  httpNodeAuth: null,
+    editorTheme: {
+        projects: {
+            enabled: true
+        }
+    },
 
-  functionGlobalContext: {},
-
-  flowFile: 'flows.json'
+    // ปิด auth ชั่วคราวก่อน (เพื่อเข้าได้แน่)
+    adminAuth: null
 };
