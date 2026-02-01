@@ -1,9 +1,13 @@
 module.exports = {
 
-    // ⭐ สำคัญที่สุด
+    // Render ใช้ port นี้
     uiPort: process.env.PORT || 1880,
 
-    // ⭐ เปิด editor
+    // 👉 กำหนด path ชัดเจน
+    httpAdminRoot: "/red",
+    httpNodeRoot: "/api",
+
+    // เปิด editor
     disableEditor: false,
 
     editorTheme: {
@@ -12,6 +16,6 @@ module.exports = {
         }
     },
 
-    // ปิด auth ชั่วคราวก่อน (เพื่อเข้าได้แน่)
+    // ปิด auth ชั่วคราว
     adminAuth: null
 };
