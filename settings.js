@@ -1,7 +1,7 @@
 module.exports = {
   uiPort: process.env.PORT || 1880,
 
-  disableEditor: true,   // ปิดหน้า editor (แนะนำ)
+  disableEditor: false,   // ปิดหน้า editor (แนะนำ)
 
   editorTheme: {
     projects: {
