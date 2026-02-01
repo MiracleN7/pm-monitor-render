@@ -5,7 +5,7 @@ module.exports = {
 
   editorTheme: {
     projects: {
-      enabled: false
+      enabled: true
     }
   },
 
