@@ -1,21 +1,17 @@
 module.exports = {
-
-    // Render ใช้ port นี้
     uiPort: process.env.PORT || 1880,
 
-    // 👉 กำหนด path ชัดเจน
+    // ⭐ เพิ่มบรรทัดนี้
+    httpRoot: "/",
+
     httpAdminRoot: "/red",
     httpNodeRoot: "/api",
 
-    // เปิด editor
     disableEditor: false,
 
     editorTheme: {
         projects: {
-            enabled: true
+            enabled: false   // ให้ตรงกับที่ Render แสดง
         }
-    },
-
-    // ปิด auth ชั่วคราว
-    adminAuth: null
+    }
 };
