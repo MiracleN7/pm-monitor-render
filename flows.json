@@ -71,9 +71,9 @@
         "certname": "",
         "keyname": "",
         "caname": "",
-        "servername": "MirageMSL",
+        "servername": "",
         "verifyservercert": true,
-        "alpnprotocol": "0955593199a-E"
+        "alpnprotocol": ""
     },
     {
         "id": "390f832b29e3cb21",
