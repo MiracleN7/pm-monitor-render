@@ -14,7 +14,7 @@
         "broker": "e45da252fa9245a0b344cfacbe854db1.s1.eu.hivemq.cloud",
         "port": "8883",
         "tls": "b9dae388e44637ae",
-        "clientid": "",
+        "clientid": "nodered-render-pm",
         "autoConnect": true,
         "usetls": true,
         "protocolVersion": "4",
@@ -72,7 +72,7 @@
         "keyname": "",
         "caname": "",
         "servername": "",
-        "verifyservercert": true,
+        "verifyservercert": false,
         "alpnprotocol": ""
     },
     {
