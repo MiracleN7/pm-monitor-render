@@ -6,9 +6,9 @@ module.exports = {
     httpAdminRoot: "/",      // Editor
     httpNodeRoot: "/api",    // HTTP In + Dashboard (/api/ui)
 
-    // ===== Flow persistence (สำคัญมาก) =====
-    userDir: process.cwd(),  // ใช้โฟลเดอร์ repo
-    flowFile: "flows.json",  // ผูก flow กับ Git
+    // ===== Flow persistence =====
+    userDir: process.cwd(),
+    flowFile: "flows.json",
 
     // ===== Credentials persistence =====
     credentialSecret: process.env.NODE_RED_SECRET,
@@ -16,7 +16,17 @@ module.exports = {
     // ===== Editor =====
     disableEditor: false,
 
-    // ===== Context store (กันข้อมูลหายตอน restart) =====
+    // ===== Admin Auth (ล็อก Editor) =====
+    adminAuth: {
+        type: "credentials",
+        users: [{
+            username: "admin",
+            password: "$2y$08$MVYbHHXafzH9p4Ok5MWer.kVfCnAVYDBEsLAoPReLnrFlvGTYD82W",
+            permissions: "*"
+        }]
+    },
+
+    // ===== Context store =====
     contextStorage: {
         default: {
             module: "localfilesystem"
