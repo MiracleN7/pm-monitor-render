@@ -1,12 +1,25 @@
 module.exports = {
+    // ===== Render port =====
     uiPort: process.env.PORT || 1880,
 
-    // ⭐ เปิด editor แบบ explicit
-    httpAdminRoot: "/",
+    // ===== Paths =====
+    httpAdminRoot: "/",      // Editor
+    httpNodeRoot: "/api",    // HTTP In + Dashboard (/api/ui)
 
-    // ⭐ แยก http node ออกไป (กันชน)
-    httpNodeRoot: "/api",
+    // ===== Flow persistence (สำคัญมาก) =====
+    userDir: process.cwd(),  // ใช้โฟลเดอร์ repo
+    flowFile: "flows.json",  // ผูก flow กับ Git
 
-    // ⭐ บังคับเปิด editor
-    disableEditor: false
+    // ===== Credentials persistence =====
+    credentialSecret: process.env.NODE_RED_SECRET,
+
+    // ===== Editor =====
+    disableEditor: false,
+
+    // ===== Context store (กันข้อมูลหายตอน restart) =====
+    contextStorage: {
+        default: {
+            module: "localfilesystem"
+        }
+    }
 };
