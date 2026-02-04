@@ -13,7 +13,7 @@
         "name": "",
         "broker": "e45da252fa9245a0b344cfacbe854db1.s1.eu.hivemq.cloud",
         "port": "8883",
-        "tls": "b9dae388e44637ae",
+        "tls": "a695a59681baef74",
         "clientid": "nodered-render-pm",
         "autoConnect": true,
         "usetls": true,
@@ -60,20 +60,6 @@
         "width": 6,
         "collapse": false,
         "className": ""
-    },
-    {
-        "id": "b9dae388e44637ae",
-        "type": "tls-config",
-        "name": "air/pms5003",
-        "cert": "",
-        "key": "",
-        "ca": "",
-        "certname": "",
-        "keyname": "",
-        "caname": "",
-        "servername": "",
-        "verifyservercert": false,
-        "alpnprotocol": ""
     },
     {
         "id": "390f832b29e3cb21",
@@ -183,6 +169,20 @@
                 "py": 0
             }
         }
+    },
+    {
+        "id": "a695a59681baef74",
+        "type": "tls-config",
+        "name": "air/pms5003",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "servername": "",
+        "verifyservercert": true,
+        "alpnprotocol": ""
     },
     {
         "id": "f8bd1a80d6eb3025",
