@@ -724,5 +724,75 @@
                 "ce5bfa2906833dc9"
             ]
         ]
+    },
+    {
+        "id": "807075cc927d062a",
+        "type": "http in",
+        "z": "86c1cce0024c0f35",
+        "name": "",
+        "url": "/pm25",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 260,
+        "y": 580,
+        "wires": [
+            [
+                "a13415df50adbbaa"
+            ]
+        ]
+    },
+    {
+        "id": "a13415df50adbbaa",
+        "type": "json",
+        "z": "86c1cce0024c0f35",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 430,
+        "y": 580,
+        "wires": [
+            [
+                "5464855cfa720159"
+            ]
+        ]
+    },
+    {
+        "id": "5464855cfa720159",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "function 8",
+        "func": "msg.payload = {\n    values: [[\n        new Date().toLocaleString(),\n        msg.payload.pm25,\n        msg.payload.temp,\n        msg.payload.hum\n    ]]\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 580,
+        "wires": [
+            [
+                "207e080bf12fad03"
+            ]
+        ]
+    },
+    {
+        "id": "207e080bf12fad03",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "",
+        "method": "",
+        "action": "",
+        "sheet": "",
+        "cells": "",
+        "flatten": false,
+        "name": "",
+        "x": 760,
+        "y": 580,
+        "wires": [
+            []
+        ]
     }
 ]
