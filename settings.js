@@ -10,6 +10,9 @@ module.exports = {
     userDir: process.cwd(),
     flowFile: "flows.json",
 
+    process.env.GOOGLE_SERVICE_KEY && 
+    (process.env.GOOGLE_SERVICE_KEY = process.env.GOOGLE_SERVICE_KEY.replace(/\\n/g, '\n'));
+
     // ===== Credentials persistence =====
     credentialSecret: process.env.NODE_RED_SECRET,
 
