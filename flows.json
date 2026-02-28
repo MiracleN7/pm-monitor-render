@@ -37,7 +37,7 @@
         "willPayload": "",
         "willMsg": {},
         "userProps": "",
-        "sessionExpiry": "86400"
+        "sessionExpiry": ""
     },
     {
         "id": "af94c5541ac7ab67",
@@ -185,6 +185,31 @@
         "alpnprotocol": ""
     },
     {
+        "id": "d34524d795ea2586",
+        "type": "gauth",
+        "name": "Unknown"
+    },
+    {
+        "id": "d087e1ec488e1435",
+        "type": "gauth",
+        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+    },
+    {
+        "id": "64991135615702ea",
+        "type": "gauth",
+        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+    },
+    {
+        "id": "207f7298c6cf4d74",
+        "type": "gauth",
+        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+    },
+    {
+        "id": "47449cdc6b79ea00",
+        "type": "gauth",
+        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+    },
+    {
         "id": "f8bd1a80d6eb3025",
         "type": "mqtt in",
         "z": "86c1cce0024c0f35",
@@ -219,6 +244,106 @@
             [
                 "6c9be860ecdd4a01",
                 "07abfef8314e8097"
+            ]
+        ]
+    },
+    {
+        "id": "066526f5b7e012cd",
+        "type": "switch",
+        "z": "86c1cce0024c0f35",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 330,
+        "y": 380,
+        "wires": [
+            [
+                "bc30abd588e880ce"
+            ]
+        ]
+    },
+    {
+        "id": "6c9be860ecdd4a01",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "function 1",
+        "func": "// ===== อ่านค่า =====\nvar pm1  = Number(msg.payload.PM1);\nvar pm25 = Number(msg.payload.PM25);\nvar pm10 = Number(msg.payload.PM10);\n\n// ===== กรองค่าเกินจริง =====\nif (pm1 > 200 || pm25 > 200 || pm10 > 200) {\n    node.warn(\"Sensor error > 200\");\n    return null;\n}\n\n// ===== กรอง Spike =====\nvar last = context.get(\"lastPM25\");\n\nif (last !== undefined && Math.abs(pm25 - last) > 50) {\n    node.warn(\"Spike detected - rejected\");\n    return null;   // ตัดทิ้งทั้งระบบ\n}\n\ncontext.set(\"lastPM25\", pm25);\n\n// ===== ส่งออก =====\nvar chartMsgs = [\n    { topic: \"PM1\", payload: pm1 },\n    { topic: \"PM2.5\", payload: pm25 },\n    { topic: \"PM10\", payload: pm10 }\n];\n\nvar gaugeMsg = { payload: pm25 };\nvar statusMsg = { payload: pm25 };\n\n// 🔴 เพิ่ม output ที่ 4 สำหรับส่งเข้า sheet\nvar sheetMsg = {\n    payload: {\n        PM1: pm1,\n        PM25: pm25,\n        PM10: pm10\n    }\n};\n\nreturn [\n    chartMsgs,\n    gaugeMsg,\n    statusMsg,\n    sheetMsg\n];",
+        "outputs": 4,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 380,
+        "wires": [
+            [],
+            [
+                "6001036b70836858"
+            ],
+            [
+                "d89bb7ed9400451f",
+                "1e6f40a18f1c4bc5",
+                "99b2104e8511d5d6",
+                "20648248bf79c6d7"
+            ],
+            [
+                "cfcfec3e8bb9a0af"
+            ]
+        ]
+    },
+    {
+        "id": "07abfef8314e8097",
+        "type": "ui_template",
+        "z": "86c1cce0024c0f35",
+        "group": "2cfe40492fdff9da",
+        "name": "",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"padding: 10px;\">\n    <h4 style=\"text-align:center; margin-bottom:8px;\">\n        ตารางแสดงมาตรฐานฝุ่น PM2.5\n    </h4>\n\n    <table style=\"\n        width:100%;\n        border-collapse: collapse;\n        text-align: center;\n        font-size: 14px;\n    \">\n        <tr style=\"background:#f2f2f2;\">\n            <th style=\"border:1px solid #ccc; padding:6px;\">ระดับ</th>\n            <th style=\"border:1px solid #ccc; padding:6px;\">ค่า PM2.5 (µg/m³)</th>\n            <th style=\"border:1px solid #ccc; padding:6px;\">ความหมาย</th>\n        </tr>\n\n        <tr style=\"background:#2ecc71; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🟢</td>\n            <td style=\"border:1px solid #ccc;\">0 – 25</td>\n            <td style=\"border:1px solid #ccc;\">ดีมาก</td>\n        </tr>\n\n        <tr style=\"background:#f1c40f;\">\n            <td style=\"border:1px solid #ccc;\">🟡</td>\n            <td style=\"border:1px solid #ccc;\">26 – 50</td>\n            <td style=\"border:1px solid #ccc;\">ปานกลาง</td>\n        </tr>\n\n        <tr style=\"background:#e67e22; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🟠</td>\n            <td style=\"border:1px solid #ccc;\">51 – 100</td>\n            <td style=\"border:1px solid #ccc;\">เริ่มมีผลกระทบต่อสุขภาพ</td>\n        </tr>\n\n        <tr style=\"background:#e74c3c; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🔴</td>\n            <td style=\"border:1px solid #ccc;\">มากกว่า 100</td>\n            <td style=\"border:1px solid #ccc;\">อันตราย</td>\n        </tr>\n    </table>\n\n    <div style=\"font-size:12px; margin-top:6px; text-align:center;\">\n        อ้างอิง: แนวทางคุณภาพอากาศ WHO / กรมควบคุมมลพิษ\n    </div>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 640,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ed7e3c56ba2740b4",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 00 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "reset_hourly",
+        "payloadType": "str",
+        "x": 700,
+        "y": 180,
+        "wires": [
+            [
+                "d5f03abc92e5b379",
+                "de82f3cc5d5aba65"
             ]
         ]
     },
@@ -269,7 +394,7 @@
         "ymin": "0",
         "ymax": "100",
         "removeOlder": "24",
-        "removeOlderPoints": "24",
+        "removeOlderPoints": "",
         "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
@@ -288,63 +413,10 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 1260,
-        "y": 240,
+        "x": 1320,
+        "y": 300,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "6c9be860ecdd4a01",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "function 1",
-        "func": "// ===== อ่านค่า =====\nvar pm1  = Number(msg.payload.PM1);\nvar pm25 = Number(msg.payload.PM25);\nvar pm10 = Number(msg.payload.PM10);\n\n// ===== กรองค่าผิดพลาด =====\nif (pm1 > 200 || pm25 > 200 || pm10 > 200) {\n    node.warn(\"Sensor error: value > 200\");\n    return null;\n}\n\n// ===== กรองค่าเด้ง (spike) =====\nvar last = context.get(\"lastPM25\");\nif (last !== undefined && Math.abs(pm25 - last) > 50) {\n    node.warn(`Spike detected: ${last} → ${pm25}`);\n    return null;\n}\ncontext.set(\"lastPM25\", pm25);\n\n// ===== Output 1 : กราฟ =====\nvar chartMsgs = [\n    { topic: \"PM1\", payload: pm1 },\n    { topic: \"PM2.5\", payload: pm25 },\n    { topic: \"PM10\", payload: pm10 }\n];\n\n// ===== Output 2 : Gauge =====\nvar gaugeMsg = { payload: pm25 };\n\n// ===== Output 3 : ส่งต่อให้ status =====\nvar statusMsg = { payload: pm25 };\n\nreturn [\n    chartMsgs,\n    gaugeMsg,\n    statusMsg\n];",
-        "outputs": 3,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 620,
-        "y": 380,
-        "wires": [
-            [
-                "f4a46cf2fa14caf3",
-                "bb1d84aea548f1d1"
-            ],
-            [
-                "6001036b70836858"
-            ],
-            [
-                "d89bb7ed9400451f",
-                "1e6f40a18f1c4bc5",
-                "99b2104e8511d5d6",
-                "20648248bf79c6d7"
-            ]
-        ]
-    },
-    {
-        "id": "066526f5b7e012cd",
-        "type": "switch",
-        "z": "86c1cce0024c0f35",
-        "name": "",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "nempty"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 1,
-        "x": 330,
-        "y": 380,
-        "wires": [
-            [
-                "bc30abd588e880ce"
-            ]
         ]
     },
     {
@@ -386,27 +458,6 @@
             [
                 "966d6f940f8c460a"
             ]
-        ]
-    },
-    {
-        "id": "07abfef8314e8097",
-        "type": "ui_template",
-        "z": "86c1cce0024c0f35",
-        "group": "2cfe40492fdff9da",
-        "name": "",
-        "order": 5,
-        "width": 0,
-        "height": 0,
-        "format": "<div style=\"padding: 10px;\">\n    <h4 style=\"text-align:center; margin-bottom:8px;\">\n        ตารางแสดงมาตรฐานฝุ่น PM2.5\n    </h4>\n\n    <table style=\"\n        width:100%;\n        border-collapse: collapse;\n        text-align: center;\n        font-size: 14px;\n    \">\n        <tr style=\"background:#f2f2f2;\">\n            <th style=\"border:1px solid #ccc; padding:6px;\">ระดับ</th>\n            <th style=\"border:1px solid #ccc; padding:6px;\">ค่า PM2.5 (µg/m³)</th>\n            <th style=\"border:1px solid #ccc; padding:6px;\">ความหมาย</th>\n        </tr>\n\n        <tr style=\"background:#2ecc71; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🟢</td>\n            <td style=\"border:1px solid #ccc;\">0 – 25</td>\n            <td style=\"border:1px solid #ccc;\">ดีมาก</td>\n        </tr>\n\n        <tr style=\"background:#f1c40f;\">\n            <td style=\"border:1px solid #ccc;\">🟡</td>\n            <td style=\"border:1px solid #ccc;\">26 – 50</td>\n            <td style=\"border:1px solid #ccc;\">ปานกลาง</td>\n        </tr>\n\n        <tr style=\"background:#e67e22; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🟠</td>\n            <td style=\"border:1px solid #ccc;\">51 – 100</td>\n            <td style=\"border:1px solid #ccc;\">เริ่มมีผลกระทบต่อสุขภาพ</td>\n        </tr>\n\n        <tr style=\"background:#e74c3c; color:white;\">\n            <td style=\"border:1px solid #ccc;\">🔴</td>\n            <td style=\"border:1px solid #ccc;\">มากกว่า 100</td>\n            <td style=\"border:1px solid #ccc;\">อันตราย</td>\n        </tr>\n    </table>\n\n    <div style=\"font-size:12px; margin-top:6px; text-align:center;\">\n        อ้างอิง: แนวทางคุณภาพอากาศ WHO / กรมควบคุมมลพิษ\n    </div>\n</div>",
-        "storeOutMessages": true,
-        "fwdInMessages": true,
-        "resendOnRefresh": true,
-        "templateScope": "local",
-        "className": "",
-        "x": 640,
-        "y": 520,
-        "wires": [
-            []
         ]
     },
     {
@@ -533,52 +584,6 @@
         ]
     },
     {
-        "id": "f4a46cf2fa14caf3",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "Hourly Aggregator",
-        "func": "// ===== ค่า PM จาก message =====\nvar value = Number(msg.payload);\nvar topic = msg.topic; // PM1 | PM2.5 | PM10\n\nif (isNaN(value)) return null;\n\n// ===== เวลา =====\nvar now = new Date();\nvar hourKey = now.getFullYear() + \"-\" +\n              (now.getMonth()+1) + \"-\" +\n              now.getDate() + \" \" +\n            now.getHours()\n\n// ===== ดึงข้อมูลสะสม =====\nvar data = context.get(\"hourData\") || {};\nvar current = data[hourKey] || {\n    PM1:  { sum: 0, count: 0 },\n    PM25: { sum: 0, count: 0 },\n    PM10: { sum: 0, count: 0 }\n};\n\n// ===== สะสมค่า =====\nif (topic === \"PM1\") {\n    current.PM1.sum += value;\n    current.PM1.count++;\n}\nelse if (topic === \"PM2.5\") {\n    current.PM25.sum += value;\n    current.PM25.count++;\n}\nelse if (topic === \"PM10\") {\n    current.PM10.sum += value;\n    current.PM10.count++;\n}\n\ndata[hourKey] = current;\ncontext.set(\"hourData\", data);\n\n// ===== ตรวจเปลี่ยนชั่วโมง =====\nvar lastHour = context.get(\"lastHour\");\n\nif (lastHour && lastHour !== hourKey) {\n    var prev = data[lastHour];\n\n    var avgPM1  = prev.PM1.count  ? (prev.PM1.sum  / prev.PM1.count).toFixed(1)  : 0;\n    var avgPM25 = prev.PM25.count ? (prev.PM25.sum / prev.PM25.count).toFixed(1) : 0;\n    var avgPM10 = prev.PM10.count ? (prev.PM10.sum / prev.PM10.count).toFixed(1) : 0;\n\n    // เก็บแค่ 24 ชั่วโมง\n    var keys = Object.keys(data);\n    if (keys.length > 24) delete data[keys[0]];\n    context.set(\"hourData\", data);\n\n    context.set(\"lastHour\", hourKey);\n\n    // ===== ส่งออก 3 เส้น =====\n    var ts = new Date(lastHour + \":00\").getTime();\n\n    return [[\n        { topic: \"PM1\", payload: Number(avgPM1), timestamp: ts },\n        { topic: \"PM2.5\", payload: Number(avgPM25), timestamp: ts },\n        { topic: \"PM10\", payload: Number(avgPM10), timestamp: ts }\n    ]];\n}\n\ncontext.set(\"lastHour\", hourKey);\nreturn null;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 890,
-        "y": 340,
-        "wires": [
-            [
-                "7a9901166c5bf714"
-            ]
-        ]
-    },
-    {
-        "id": "ed7e3c56ba2740b4",
-        "type": "inject",
-        "z": "86c1cce0024c0f35",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "",
-        "crontab": "00 00 * * *",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "reset_hourly",
-        "payloadType": "str",
-        "x": 700,
-        "y": 180,
-        "wires": [
-            [
-                "d5f03abc92e5b379",
-                "de82f3cc5d5aba65"
-            ]
-        ]
-    },
-    {
         "id": "d5f03abc92e5b379",
         "type": "function",
         "z": "86c1cce0024c0f35",
@@ -619,44 +624,6 @@
         ]
     },
     {
-        "id": "bb1d84aea548f1d1",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "Daily Aggregator",
-        "func": "var value = Number(msg.payload);\nvar topic = msg.topic; // PM1 | PM2.5 | PM10\nif (isNaN(value)) return null;\n\n// key ของวัน\nvar now = new Date();\nvar dayKey = now.getFullYear() + \"-\" +\n             (now.getMonth()+1) + \"-\" +\n             now.getDate();\n\nvar data = context.get(\"dayData\") || {};\nvar current = data[dayKey] || {\n    PM1:  { sum: 0, count: 0 },\n    PM25: { sum: 0, count: 0 },\n    PM10: { sum: 0, count: 0 }\n};\n\nif (topic === \"PM1\") {\n    current.PM1.sum += value;\n    current.PM1.count++;\n}\nelse if (topic === \"PM2.5\") {\n    current.PM25.sum += value;\n    current.PM25.count++;\n}\nelse if (topic === \"PM10\") {\n    current.PM10.sum += value;\n    current.PM10.count++;\n}\n\ndata[dayKey] = current;\ncontext.set(\"dayData\", data);\n\n// รอจนกว่าจะรีเซ็ตตอนเที่ยงคืน\nreturn null;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 890,
-        "y": 300,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "ce5bfa2906833dc9",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "Daily → Monthly",
-        "func": "var data = context.get(\"dayData\") || {};\nvar keys = Object.keys(data);\nif (keys.length === 0) return null;\n\n// เอาวันล่าสุด\nvar dayKey = keys[keys.length - 1];\nvar d = data[dayKey];\n\nvar avgPM1 = d.PM1.count ? (d.PM1.sum / d.PM1.count).toFixed(1) : 0;\nvar avgPM25 = d.PM25.count ? (d.PM25.sum / d.PM25.count).toFixed(1) : 0;\nvar avgPM10 = d.PM10.count ? (d.PM10.sum / d.PM10.count).toFixed(1) : 0;\n\n// เก็บ monthly\nvar month = context.get(\"monthData\") || [];\nmonth.push({\n    date: dayKey,\n    PM1: avgPM1,\n    PM25: avgPM25,\n    PM10: avgPM10\n});\n\n// เก็บแค่ 30 วัน\nif (month.length > 30) month.shift();\ncontext.set(\"monthData\", month);\n\n// ล้าง daily\ncontext.set(\"dayData\", {});\n\n// timestamp เที่ยงคืนของวันนั้น\nvar ts = new Date(dayKey + \"T00:00:00\").getTime();\n\nreturn [[\n    { topic: \"PM1\", payload: Number(avgPM1), timestamp: ts },\n    { topic: \"PM2.5\", payload: Number(avgPM25), timestamp: ts },\n    { topic: \"PM10\", payload: Number(avgPM10), timestamp: ts }\n]];\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 880,
-        "y": 120,
-        "wires": [
-            [
-                "045de5d3636534cd"
-            ]
-        ]
-    },
-    {
         "id": "045de5d3636534cd",
         "type": "ui_chart",
         "z": "86c1cce0024c0f35",
@@ -675,7 +642,7 @@
         "ymin": "0",
         "ymax": "100",
         "removeOlder": "30",
-        "removeOlderPoints": "30",
+        "removeOlderPoints": "",
         "removeOlderUnit": "86400",
         "cutout": 0,
         "useOneColor": false,
@@ -694,83 +661,42 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 1090,
-        "y": 120,
+        "x": 1310,
+        "y": 200,
         "wires": [
             []
         ]
     },
     {
-        "id": "c3671298b0654062",
-        "type": "inject",
+        "id": "207e080bf12fad03",
+        "type": "GSheet",
         "z": "86c1cce0024c0f35",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "",
-        "crontab": "00 00 * * *",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "daily",
-        "payloadType": "str",
-        "x": 690,
-        "y": 60,
-        "wires": [
-            [
-                "ce5bfa2906833dc9"
-            ]
-        ]
-    },
-    {
-        "id": "807075cc927d062a",
-        "type": "http in",
-        "z": "86c1cce0024c0f35",
-        "name": "",
-        "url": "/pm25",
-        "method": "post",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 260,
-        "y": 580,
-        "wires": [
-            [
-                "a13415df50adbbaa"
-            ]
-        ]
-    },
-    {
-        "id": "a13415df50adbbaa",
-        "type": "json",
-        "z": "86c1cce0024c0f35",
-        "name": "",
-        "property": "payload",
+        "creds": "d087e1ec488e1435",
+        "method": "append",
         "action": "",
-        "pretty": false,
-        "x": 430,
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "raw_data!A:D",
+        "flatten": false,
+        "name": "raw_data",
+        "x": 580,
         "y": 580,
         "wires": [
-            [
-                "5464855cfa720159"
-            ]
+            []
         ]
     },
     {
-        "id": "5464855cfa720159",
+        "id": "cfcfec3e8bb9a0af",
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "function 8",
-        "func": "msg.payload = {\n    values: [[\n        new Date().toLocaleString(),\n        msg.payload.pm25,\n        msg.payload.temp,\n        msg.payload.hum\n    ]]\n};\nreturn msg;\n",
+        "func": "let now = new Date().toISOString();\nlet data = msg.payload;\n\nlet pm1 = 0;\nlet pm25 = 0;\nlet pm10 = 0;\n\n// ===== กรณีเป็น JSON object =====\nif (typeof data === \"object\") {\n    pm1 = Number(data.PM1) || 0;\n    pm25 = Number(data.PM25) || 0;\n    pm10 = Number(data.PM10) || 0;\n}\n\n// ===== กรณีเป็น string =====\nelse if (typeof data === \"string\") {\n\n    let matchPM1 = data.match(/PM1:(\\d+)/);\n    let matchPM25 = data.match(/PM2\\.5:(\\d+)/);\n    let matchPM10 = data.match(/PM10:(\\d+)/);\n\n    if (matchPM1) pm1 = Number(matchPM1[1]);\n    if (matchPM25) pm25 = Number(matchPM25[1]);\n    if (matchPM10) pm10 = Number(matchPM10[1]);\n}\n\nmsg.payload = [\n    [now, pm1, pm25, pm10]\n];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 580,
+        "x": 380,
         "y": 580,
         "wires": [
             [
@@ -779,20 +705,237 @@
         ]
     },
     {
-        "id": "207e080bf12fad03",
+        "id": "4925930b5d93b847",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "Sheet Hourly Average",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows)) return null;\nif (rows.length < 2) return null; // ไม่มีข้อมูล\n\nrows.shift(); // ลบ header\n\nvar oneHourAgo = Date.now() - (60 * 60 * 1000);\n\nvar sum1 = 0, sum25 = 0, sum10 = 0, count = 0;\n\nrows.forEach(r => {\n    if (!r[0]) return;\n\n    var t = new Date(r[0]).getTime();\n    if (!isNaN(t) && t >= oneHourAgo) {\n        sum1 += Number(r[1]) || 0;\n        sum25 += Number(r[2]) || 0;\n        sum10 += Number(r[3]) || 0;\n        count++;\n    }\n});\n\nif (count === 0) return null;\n\nmsg.payload = [\n    [\n        new Date().toISOString(),\n        (sum1 / count).toFixed(1),\n        (sum25 / count).toFixed(1),\n        (sum10 / count).toFixed(1)\n    ]\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 660,
+        "wires": [
+            [
+                "6ae01ecdfe7a9dc9"
+            ]
+        ]
+    },
+    {
+        "id": "6ae01ecdfe7a9dc9",
         "type": "GSheet",
         "z": "86c1cce0024c0f35",
-        "creds": "",
-        "method": "",
+        "creds": "64991135615702ea",
+        "method": "append",
         "action": "",
-        "sheet": "",
-        "cells": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "hourly_summary!A:D",
         "flatten": false,
+        "name": "hourly_summary",
+        "x": 920,
+        "y": 680,
+        "wires": [
+            [
+                "7a9901166c5bf714"
+            ]
+        ]
+    },
+    {
+        "id": "3de50718be1a22ed",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "207f7298c6cf4d74",
+        "method": "get",
+        "action": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "raw_data!A:D",
+        "flatten": false,
+        "name": "Get raw_data",
+        "x": 400,
+        "y": 660,
+        "wires": [
+            [
+                "4925930b5d93b847"
+            ]
+        ]
+    },
+    {
+        "id": "1a9a7aa1ba75930a",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
+        "name": "reset rawdata",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 00 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 660,
+        "wires": [
+            [
+                "3de50718be1a22ed"
+            ]
+        ]
+    },
+    {
+        "id": "6f7a590c0341f347",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "47449cdc6b79ea00",
+        "method": "get",
+        "action": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "hourly_summary!A:D",
+        "flatten": false,
+        "name": "Get hourly_summary",
+        "x": 740,
+        "y": 300,
+        "wires": [
+            [
+                "64dabc163a8865d7",
+                "bece90e5dd28be29"
+            ]
+        ]
+    },
+    {
+        "id": "f809986c85ea59ab",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
+        "name": "reset hourly",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 00 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 490,
+        "y": 260,
+        "wires": [
+            [
+                "6f7a590c0341f347"
+            ]
+        ]
+    },
+    {
+        "id": "64dabc163a8865d7",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "Format 24H Chart",
+        "func": "let rows = msg.payload || [];\n\nrows = rows.filter(r => Array.isArray(r) && r.length >= 4);\n\n// เรียงตามเวลา\nrows.sort((a,b)=>{\n    return new Date(a[0]).getTime() - new Date(b[0]).getTime();\n});\n\n// เอาแค่ 24 จุดล่าสุด\nrows = rows.slice(-24);\n\n// เตรียม data สำหรับ chart\nlet labels = [];\nlet pm1 = [];\nlet pm25 = [];\nlet pm10 = [];\n\nrows.forEach(r => {\n    labels.push(new Date(r[0]).toLocaleTimeString(\"th-TH\"));\n    pm1.push(Number(r[1]));\n    pm25.push(Number(r[2]));\n    pm10.push(Number(r[3]));\n});\n\nmsg.payload = {\n    series: [\"PM1\",\"PM2.5\",\"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: labels\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 300,
+        "wires": [
+            [
+                "7a9901166c5bf714"
+            ]
+        ]
+    },
+    {
+        "id": "bece90e5dd28be29",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "Format 30D Chart",
+        "func": "let rows = msg.payload || [];\n\nrows = rows.filter(r => Array.isArray(r) && r.length >= 4);\n\nrows.sort((a,b)=>{\n    return new Date(a[0]).getTime() - new Date(b[0]).getTime();\n});\n\nrows = rows.slice(-30);\n\nlet labels = [];\nlet pm1 = [];\nlet pm25 = [];\nlet pm10 = [];\n\nrows.forEach(r => {\n    labels.push(new Date(r[0]).toLocaleDateString(\"th-TH\"));\n    pm1.push(Number(r[1]));\n    pm25.push(Number(r[2]));\n    pm10.push(Number(r[3]));\n});\n\nmsg.payload = {\n    series: [\"PM1\",\"PM2.5\",\"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: labels\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1090,
+        "y": 140,
+        "wires": [
+            [
+                "045de5d3636534cd"
+            ]
+        ]
+    },
+    {
+        "id": "3b9f64afeeb519e7",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
         "name": "",
-        "x": 760,
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 00 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 830,
+        "y": 120,
+        "wires": [
+            [
+                "bece90e5dd28be29"
+            ]
+        ]
+    },
+    {
+        "id": "331be8fbb8b76196",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
+        "name": "Hourly Trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
         "y": 580,
         "wires": [
-            []
+            [
+                "3de50718be1a22ed"
+            ]
         ]
     }
 ]
