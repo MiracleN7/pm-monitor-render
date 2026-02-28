@@ -1,8 +1,4 @@
 // แก้ newline จาก Render env
-if (process.env.GOOGLE_SERVICE_KEY) {
-    process.env.GOOGLE_SERVICE_KEY =
-        process.env.GOOGLE_SERVICE_KEY.replace(/\\n/g, '\n');
-}
 
 module.exports = {
 
