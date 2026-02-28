@@ -1,25 +1,28 @@
+// แก้ newline จาก Render env
+if (process.env.GOOGLE_SERVICE_KEY) {
+    process.env.GOOGLE_SERVICE_KEY =
+        process.env.GOOGLE_SERVICE_KEY.replace(/\\n/g, '\n');
+}
+
 module.exports = {
+
     // ===== Render port =====
     uiPort: process.env.PORT || 1880,
 
     // ===== Paths =====
-    httpAdminRoot: "/",      // Editor
-    httpNodeRoot: "/api",    // HTTP In + Dashboard (/api/ui)
+    httpAdminRoot: "/",
+    httpNodeRoot: "/api",
 
     // ===== Flow persistence =====
     userDir: process.cwd(),
     flowFile: "flows.json",
 
-    process.env.GOOGLE_SERVICE_KEY && 
-    (process.env.GOOGLE_SERVICE_KEY = process.env.GOOGLE_SERVICE_KEY.replace(/\\n/g, '\n'));
-
     // ===== Credentials persistence =====
-    credentialSecret: process.env.NODE_RED_SECRET,
+    credentialSecret: process.env.NODE_RED_CREDENTIAL_SECRET,
 
     // ===== Editor =====
     disableEditor: false,
 
-    // ===== Admin Auth (ล็อก Editor) =====
     adminAuth: {
         type: "credentials",
         users: [{
@@ -29,7 +32,6 @@ module.exports = {
         }]
     },
 
-    // ===== Context store =====
     contextStorage: {
         default: {
             module: "localfilesystem"
