@@ -55,7 +55,7 @@
         "type": "ui_group",
         "name": "Details",
         "tab": "390f832b29e3cb21",
-        "order": 1,
+        "order": 2,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -83,7 +83,8 @@
                 "default": "#0094CE",
                 "baseColor": "#0094CE",
                 "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
+                "edited": true,
+                "reset": false
             },
             "darkTheme": {
                 "default": "#097479",
@@ -303,8 +304,8 @@
         "topic": "",
         "payload": "reset_hourly",
         "payloadType": "str",
-        "x": 660,
-        "y": 420,
+        "x": 820,
+        "y": 880,
         "wires": [
             [
                 "de82f3cc5d5aba65"
@@ -500,7 +501,7 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1200,
+        "x": 1280,
         "y": 800,
         "wires": [
             []
@@ -559,8 +560,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 900,
-        "y": 480,
+        "x": 1160,
+        "y": 860,
         "wires": [
             [
                 "b473d0e706690651"
