@@ -814,7 +814,7 @@
         ],
         "repeat": "300",
         "crontab": "",
-        "once": true,
+        "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
@@ -832,7 +832,7 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Create Daily Avg",
-        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) return null;\n\nrows.shift(); // ลบ header\n\n// หา \"เมื่อวาน\"\nvar yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nvar targetDate = yesterday.toDateString();\n\nvar sum1 = 0, sum25 = 0, sum10 = 0, count = 0;\n\nrows.forEach(r => {\n    if (!r[0]) return;\n\n    var d = new Date(r[0]);\n    if (d.toDateString() === targetDate) {\n        sum1 += Number(r[1]) || 0;\n        sum25 += Number(r[2]) || 0;\n        sum10 += Number(r[3]) || 0;\n        count++;\n    }\n});\n\nif (count === 0) return null;\n\nmsg.payload = [[\n    yesterday.toLocaleDateString(\"sv-SE\", { timeZone: \"Asia/Bangkok\" }),\n    (sum1 / count).toFixed(1),\n    (sum25 / count).toFixed(1),\n    (sum10 / count).toFixed(1)\n]];\n\nnode.warn(\"Daily summary created\");\n\nreturn msg;",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) {\n    node.warn(\"No data\");\n    return null;\n}\n\nrows.shift(); // ลบ header\n\n// ===== หาเมื่อวาน (เวลาไทย) =====\nvar now = new Date();\nvar yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);\n\nvar sum1 = 0, sum25 = 0, sum10 = 0, count = 0;\n\nrows.forEach(function (r) {\n\n    if (!r[0]) return;\n\n    var parts = r[0].split(\", \");\n    if (parts.length < 2) return;\n\n    var datePart = parts[0];\n    var timePart = parts[1];\n\n    var dmy = datePart.split(\"/\");\n    if (dmy.length < 3) return;\n\n    var day = parseInt(dmy[0]);\n    var month = parseInt(dmy[1]) - 1;\n    var year = parseInt(dmy[2]);\n\n    var dateObj = new Date(year, month, day);\n\n    if (\n        dateObj.getFullYear() === yesterday.getFullYear() &&\n        dateObj.getMonth() === yesterday.getMonth() &&\n        dateObj.getDate() === yesterday.getDate()\n    ) {\n        sum1 += Number(r[1]) || 0;\n        sum25 += Number(r[2]) || 0;\n        sum10 += Number(r[3]) || 0;\n        count++;\n    }\n});\n\nif (count === 0) {\n    node.warn(\"No data for yesterday\");\n    return null;\n}\n\nmsg.payload = [[\n    yesterday.toLocaleDateString(\"sv-SE\", { timeZone: \"Asia/Bangkok\" }),\n    Number((sum1 / count).toFixed(1)),\n    Number((sum25 / count).toFixed(1)),\n    Number((sum10 / count).toFixed(1))\n]];\n\nnode.warn(\"Daily summary created\");\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -843,7 +843,8 @@
         "y": 160,
         "wires": [
             [
-                "42d6a531270ee5e6"
+                "42d6a531270ee5e6",
+                "a37656a452c78d9e"
             ]
         ]
     },
@@ -861,7 +862,9 @@
         "x": 930,
         "y": 160,
         "wires": [
-            []
+            [
+                "9687f5022841728c"
+            ]
         ]
     },
     {
@@ -1027,5 +1030,21 @@
                 "6c68300c925dd801"
             ]
         ]
+    },
+    {
+        "id": "a37656a452c78d9e",
+        "type": "debug",
+        "z": "86c1cce0024c0f35",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1040,
+        "y": 300,
+        "wires": []
     }
 ]
