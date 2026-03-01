@@ -303,7 +303,7 @@
         "topic": "",
         "payload": "reset_hourly",
         "payloadType": "str",
-        "x": 720,
+        "x": 660,
         "y": 420,
         "wires": [
             [
@@ -469,7 +469,7 @@
         "id": "99b2104e8511d5d6",
         "type": "function",
         "z": "86c1cce0024c0f35",
-        "name": "function 4",
+        "name": "MinMaxAvg",
         "func": "var pm25 = Number(msg.payload);\n\nvar max = context.get(\"daily_max\") ?? pm25;\nvar min = context.get(\"daily_min\") ?? pm25;\nvar sum = context.get(\"daily_sum\") ?? 0;\nvar count = context.get(\"daily_count\") ?? 0;\n\nif (pm25 > max) max = pm25;\nif (pm25 < min) min = pm25;\n\nsum += pm25;\ncount += 1;\n\ncontext.set(\"daily_max\", max);\ncontext.set(\"daily_min\", min);\ncontext.set(\"daily_sum\", sum);\ncontext.set(\"daily_count\", count);\n\nmsg.payload = {\n    max: max,\n    min: min,\n    avg: (sum / count).toFixed(1)\n};\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
@@ -477,7 +477,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 780,
+        "x": 790,
         "y": 800,
         "wires": [
             [
@@ -500,7 +500,7 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1220,
+        "x": 1200,
         "y": 800,
         "wires": [
             []
