@@ -192,7 +192,7 @@
     {
         "id": "d087e1ec488e1435",
         "type": "gauth",
-        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+        "name": "Unknown"
     },
     {
         "id": "64991135615702ea",
@@ -206,6 +206,11 @@
     },
     {
         "id": "47449cdc6b79ea00",
+        "type": "gauth",
+        "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
+    },
+    {
+        "id": "2c61e574686c476a",
         "type": "gauth",
         "name": "esp32-service@esp32pm25data.iam.gserviceaccount.com"
     },
@@ -636,7 +641,7 @@
         "cells": "raw_data!A:D",
         "flatten": false,
         "name": "raw_data",
-        "x": 640,
+        "x": 660,
         "y": 580,
         "wires": [
             []
@@ -799,12 +804,12 @@
         "id": "3de50718be1a22ed",
         "type": "GSheet",
         "z": "86c1cce0024c0f35",
-        "creds": "d087e1ec488e1435",
+        "creds": "2c61e574686c476a",
         "method": "get",
         "action": "",
         "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
         "cells": "raw_data!A:D",
-        "flatten": false,
+        "flatten": true,
         "name": "Get raw_data",
         "x": 360,
         "y": 660,
