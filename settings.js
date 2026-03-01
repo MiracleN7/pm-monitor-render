@@ -1,22 +1,16 @@
-// แก้ newline จาก Render env
-
 module.exports = {
 
-    // ===== Render port =====
     uiPort: process.env.PORT || 1880,
 
-    // ===== Paths =====
     httpAdminRoot: "/",
     httpNodeRoot: "/api",
 
-    // ===== Flow persistence =====
-    userDir: process.cwd(),
+    // 🔥 ใช้ Disk ถาวร
+    userDir: "/data",
     flowFile: "flows.json",
 
-    // ===== Credentials persistence =====
     credentialSecret: process.env.NODE_RED_CREDENTIAL_SECRET,
 
-    // ===== Editor =====
     disableEditor: false,
 
     adminAuth: {
