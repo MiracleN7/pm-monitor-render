@@ -231,8 +231,7 @@
         "y": 380,
         "wires": [
             [
-                "066526f5b7e012cd",
-                "cfcfec3e8bb9a0af"
+                "066526f5b7e012cd"
             ]
         ]
     },
@@ -242,7 +241,7 @@
         "z": "86c1cce0024c0f35",
         "name": "function 1",
         "func": "// ===== อ่านค่า =====\nvar pm1  = Number(msg.payload.PM1);\nvar pm25 = Number(msg.payload.PM25);\nvar pm10 = Number(msg.payload.PM10);\n\n// ===== กรองค่าเกินจริง =====\nif (pm1 > 200 || pm25 > 200 || pm10 > 200) {\n    node.warn(\"Sensor error > 200\");\n    return null;\n}\n\n// ===== กรอง Spike =====\nvar last = context.get(\"lastPM25\");\n\nif (last !== undefined && Math.abs(pm25 - last) > 50) {\n    node.warn(\"Spike detected - rejected\");\n    return null;   // ตัดทิ้งทั้งระบบ\n}\n\ncontext.set(\"lastPM25\", pm25);\n\n// ===== ส่งออก =====\nvar chartMsgs = [\n    { topic: \"PM1\", payload: pm1 },\n    { topic: \"PM2.5\", payload: pm25 },\n    { topic: \"PM10\", payload: pm10 }\n];\n\nvar gaugeMsg = { payload: pm25 };\nvar statusMsg = { payload: pm25 };\n\n// 🔴 เพิ่ม output ที่ 4 สำหรับส่งเข้า sheet\nvar sheetMsg = {\n    payload: {\n        PM1: pm1,\n        PM25: pm25,\n        PM10: pm10\n    }\n};\n\nreturn [\n    chartMsgs,\n    gaugeMsg,\n    statusMsg,\n    sheetMsg\n];",
-        "outputs": 3,
+        "outputs": 4,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
@@ -260,6 +259,9 @@
                 "1e6f40a18f1c4bc5",
                 "99b2104e8511d5d6",
                 "20648248bf79c6d7"
+            ],
+            [
+                "cfcfec3e8bb9a0af"
             ]
         ]
     },
@@ -638,10 +640,10 @@
         "method": "append",
         "action": "",
         "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
-        "cells": "raw_data!A:D",
+        "cells": "raw_data",
         "flatten": false,
         "name": "raw_data",
-        "x": 660,
+        "x": 640,
         "y": 580,
         "wires": [
             []
@@ -809,7 +811,7 @@
         "action": "",
         "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
         "cells": "raw_data!A:D",
-        "flatten": true,
+        "flatten": false,
         "name": "Get raw_data",
         "x": 360,
         "y": 660,
