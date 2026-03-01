@@ -258,7 +258,6 @@
             [
                 "d89bb7ed9400451f",
                 "1e6f40a18f1c4bc5",
-                "99b2104e8511d5d6",
                 "20648248bf79c6d7"
             ],
             [
@@ -304,8 +303,8 @@
         "topic": "",
         "payload": "reset_hourly",
         "payloadType": "str",
-        "x": 820,
-        "y": 880,
+        "x": 920,
+        "y": 980,
         "wires": [
             [
                 "de82f3cc5d5aba65"
@@ -363,7 +362,7 @@
         "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
-        "useUTC": false,
+        "useUTC": true,
         "colors": [
             "#1f77b4",
             "#11ff00",
@@ -467,26 +466,6 @@
         ]
     },
     {
-        "id": "99b2104e8511d5d6",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "MinMaxAvg",
-        "func": "var pm25 = Number(msg.payload);\n\nvar max = context.get(\"daily_max\") ?? pm25;\nvar min = context.get(\"daily_min\") ?? pm25;\nvar sum = context.get(\"daily_sum\") ?? 0;\nvar count = context.get(\"daily_count\") ?? 0;\n\nif (pm25 > max) max = pm25;\nif (pm25 < min) min = pm25;\n\nsum += pm25;\ncount += 1;\n\ncontext.set(\"daily_max\", max);\ncontext.set(\"daily_min\", min);\ncontext.set(\"daily_sum\", sum);\ncontext.set(\"daily_count\", count);\n\nmsg.payload = {\n    max: max,\n    min: min,\n    avg: (sum / count).toFixed(1)\n};\n\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 790,
-        "y": 800,
-        "wires": [
-            [
-                "b473d0e706690651"
-            ]
-        ]
-    },
-    {
         "id": "b473d0e706690651",
         "type": "ui_template",
         "z": "86c1cce0024c0f35",
@@ -501,8 +480,8 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1280,
-        "y": 800,
+        "x": 1380,
+        "y": 1020,
         "wires": [
             []
         ]
@@ -553,15 +532,15 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "function 7",
-        "func": "context.set(\"daily_max\", null);\ncontext.set(\"daily_min\", null);\ncontext.set(\"daily_sum\", 0);\ncontext.set(\"daily_count\", 0);\n\nmsg.payload = {\n    max: \"-\",\n    min: \"-\",\n    avg: \"-\"\n};\n\nreturn msg;\n",
+        "func": "var pm25 = Number(msg.payload);\n\nvar max = context.get(\"daily_max\");\nvar min = context.get(\"daily_min\");\nvar sum = context.get(\"daily_sum\");\nvar count = context.get(\"daily_count\");\n\n// ถ้ายังไม่มีค่าเลย\nif (max === undefined || max === null) {\n    max = pm25;\n    min = pm25;\n    sum = pm25;\n    count = 1;\n} else {\n    if (pm25 > max) max = pm25;\n    if (pm25 < min) min = pm25;\n\n    sum += pm25;\n    count += 1;\n}\n\ncontext.set(\"daily_max\", max);\ncontext.set(\"daily_min\", min);\ncontext.set(\"daily_sum\", sum);\ncontext.set(\"daily_count\", count);\n\nmsg.payload = {\n    max: max,\n    min: min,\n    avg: (sum / count).toFixed(1)\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1160,
-        "y": 860,
+        "x": 1180,
+        "y": 980,
         "wires": [
             [
                 "b473d0e706690651"
@@ -591,7 +570,7 @@
         "removeOlderUnit": "86400",
         "cutout": 0,
         "useOneColor": false,
-        "useUTC": false,
+        "useUTC": true,
         "colors": [
             "#1f77b4",
             "#aec7e8",
@@ -654,7 +633,7 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Format 24H Chart",
-        "func": "var rows = msg.payload;\n\n// ถ้าไม่มีข้อมูล หรือมีแค่ header\nif (!Array.isArray(rows) || rows.length < 2) {\n    msg.payload = [{\n        series: [\"PM1\", \"PM2.5\", \"PM10\"],\n        data: [[], [], []],\n        labels: [\"\"]\n    }];\n    return msg;\n}\n\n// ตัด header\nrows = rows.slice(1);\n\n// เรียงตามเวลา\nrows.sort(function (a, b) {\n    var d1 = new Date(a[0]).getTime();\n    var d2 = new Date(b[0]).getTime();\n    return d1 - d2;\n});\n\n// เอา 24 ชั่วโมงล่าสุด\nrows = rows.slice(-24);\n\nvar pm1 = [];\nvar pm25 = [];\nvar pm10 = [];\n\nfor (var i = 0; i < rows.length; i++) {\n\n    var r = rows[i];\n    var date = new Date(r[0]);\n\n    pm1.push({ x: date, y: Number(r[1]) || 0 });\n    pm25.push({ x: date, y: Number(r[2]) || 0 });\n    pm10.push({ x: date, y: Number(r[3]) || 0 });\n}\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: [\"\"]\n}];\n\nreturn msg;",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) {\n    msg.payload = [{\n        series: [\"PM1\", \"PM2.5\", \"PM10\"],\n        data: [[], [], []],\n        labels: [\"\"]\n    }];\n    return msg;\n}\n\nrows = rows.slice(1);\n\n// ====== ฟังก์ชัน parse วันที่แบบไทย ======\nfunction parseThaiDate(str) {\n    var parts = str.split(\",\");\n    var datePart = parts[0].trim();\n    var timePart = parts[1] ? parts[1].trim() : \"00:00:00\";\n\n    var dmy = datePart.split(\"/\");\n    var day = parseInt(dmy[0]);\n    var month = parseInt(dmy[1]) - 1;\n    var year = parseInt(dmy[2]);\n\n    var hms = timePart.split(\":\");\n    var hour = parseInt(hms[0]);\n    var min = parseInt(hms[1]);\n    var sec = parseInt(hms[2]);\n\n    return new Date(year, month, day, hour, min, sec);\n}\n\n// ====== วันที่วันนี้ ======\nvar today = new Date();\nvar todayDay = today.getDate();\nvar todayMonth = today.getMonth();\nvar todayYear = today.getFullYear();\n\n// ====== กรองเฉพาะวันนี้ ======\nvar filtered = rows.filter(function (r) {\n    var d = parseThaiDate(r[0]);\n    return (\n        d.getDate() === todayDay &&\n        d.getMonth() === todayMonth &&\n        d.getFullYear() === todayYear\n    );\n});\n\n// ====== เรียงตามเวลา ======\nfiltered.sort(function (a, b) {\n    return parseThaiDate(a[0]).getTime() -\n        parseThaiDate(b[0]).getTime();\n});\n\nvar pm1 = [];\nvar pm25 = [];\nvar pm10 = [];\n\nfor (var i = 0; i < filtered.length; i++) {\n\n    var r = filtered[i];\n    var date = parseThaiDate(r[0]);\n\n    pm1.push({ x: date, y: Number(r[1]) || 0 });\n    pm25.push({ x: date, y: Number(r[2]) || 0 });\n    pm10.push({ x: date, y: Number(r[3]) || 0 });\n}\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: [\"\"]\n}];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -674,7 +653,7 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Format 30D Chart",
-        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) {\n    return null;\n}\n\nrows = rows.slice(1);\n\nrows.sort(function (a, b) {\n    var d1 = new Date(a[0]).getTime();\n    var d2 = new Date(b[0]).getTime();\n    return d1 - d2;\n});\n\nrows = rows.slice(-30);\n\nvar pm1 = [];\nvar pm25 = [];\nvar pm10 = [];\n\nfor (var i = 0; i < rows.length; i++) {\n\n    var r = rows[i];\n    var date = new Date(r[0]);\n\n    pm1.push({ x: date, y: Number(r[1]) || 0 });\n    pm25.push({ x: date, y: Number(r[2]) || 0 });\n    pm10.push({ x: date, y: Number(r[3]) || 0 });\n\n}  // <<< ปิดตรงนี้\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: [\"\"]\n}];\n\nreturn msg;",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) {\n    return null;\n}\n\nrows = rows.slice(1); // ตัด header\n\nfunction parseThaiDate(str) {\n    var parts = str.split(\",\");\n    var datePart = parts[0].trim();\n    var timePart = parts[1] ? parts[1].trim() : \"00:00:00\";\n\n    var dmy = datePart.split(\"/\");\n    var day = parseInt(dmy[0]);\n    var month = parseInt(dmy[1]) - 1; // JS เดือนเริ่มที่ 0\n    var year = parseInt(dmy[2]);\n\n    var hms = timePart.split(\":\");\n    var hour = parseInt(hms[0]);\n    var min = parseInt(hms[1]);\n    var sec = parseInt(hms[2]);\n\n    return new Date(year, month, day, hour, min, sec);\n}\n\nrows.sort(function (a, b) {\n    return parseThaiDate(a[0]).getTime() - \n       parseThaiDate(b[0]).getTime();\n});\n\nrows = rows.slice(-30);\n\nvar pm1 = [];\nvar pm25 = [];\nvar pm10 = [];\n\nfor (var i = 0; i < rows.length; i++) {\n\n    var r = rows[i];\n    var date = parseThaiDate(r[0]);\n\n    pm1.push({ x: date, y: Number(r[1]) || 0 });\n    pm25.push({ x: date, y: Number(r[2]) || 0 });\n    pm10.push({ x: date, y: Number(r[3]) || 0 });\n\n}\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: [\"\"]\n}];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -718,7 +697,7 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Sheet Hourly Average",
-        "func": "var oneHourAgo = Date.now() - (60 * 60 * 1000);\nvar rows = msg.payload;\n\nvar sumPM1 = 0;\nvar sumPM25 = 0;\nvar sumPM10 = 0;\nvar count = 0;\n\nrows.forEach(function (r) {\n\n    if (!r[0]) return;\n\n    var datetime = r[0];  // \"1/3/2026, 15:31:23\"\n\n    var parts = datetime.split(\", \");\n    if (parts.length < 2) return;\n\n    var datePart = parts[0];\n    var timePart = parts[1];\n\n    var d = datePart.split(\"/\");\n    if (d.length < 3) return;\n\n    var day = d[0];\n    var month = d[1];\n    var year = d[2];\n\n    var isoString =\n        year + \"-\" +\n        month.padStart(2, '0') + \"-\" +\n        day.padStart(2, '0') +\n        \"T\" + timePart;\n\n    var t = new Date(isoString).getTime();\n    if (isNaN(t)) return;\n\n    if (t >= oneHourAgo) {\n\n        var pm1 = parseFloat(r[1]);\n        var pm25 = parseFloat(r[2]);\n        var pm10 = parseFloat(r[3]);\n\n        if (!isNaN(pm1) && !isNaN(pm25) && !isNaN(pm10)) {\n            sumPM1 += pm1;\n            sumPM25 += pm25;\n            sumPM10 += pm10;\n            count++;\n        }\n    }\n});\n\nvar avgPM1 = 0;\nvar avgPM25 = 0;\nvar avgPM10 = 0;\n\nif (count > 0) {\n    avgPM1 = sumPM1 / count;\n    avgPM25 = sumPM25 / count;\n    avgPM10 = sumPM10 / count;\n}\n\n// ===== ส่งเข้า hourly_summary =====\nmsg.payload = [\n    new Date().toLocaleString(\"en-GB\"),\n    Number(avgPM1.toFixed(2)),\n    Number(avgPM25.toFixed(2)),\n    Number(avgPM10.toFixed(2))\n];\n\nreturn msg;",
+        "func": "var oneHourAgo = Date.now() - (60 * 60 * 1000);\nvar rows = msg.payload;\n\nvar sumPM1 = 0;\nvar sumPM25 = 0;\nvar sumPM10 = 0;\nvar count = 0;\n\nrows.forEach(function (r) {\n\n    if (!r[0]) return;\n\n    var parts = r[0].split(\", \");\n    if (parts.length < 2) return;\n\n    var datePart = parts[0];\n    var timePart = parts[1];\n\n    var d = datePart.split(\"/\");\n    if (d.length < 3) return;\n\n    var day = parseInt(d[0]);\n    var month = parseInt(d[1]) - 1; // JS month เริ่มที่ 0\n    var year = parseInt(d[2]);\n\n    var tParts = timePart.split(\":\");\n    var hour = parseInt(tParts[0]);\n    var min = parseInt(tParts[1]);\n    var sec = parseInt(tParts[2]);\n\n    // สร้างเวลาแบบ local ตรง ๆ (ไม่ใช้ padStart ไม่ใช้ ISO)\n    var t = new Date(year, month, day, hour, min, sec).getTime();\n\n    if (t >= oneHourAgo) {\n\n        var pm1 = parseFloat(r[1]);\n        var pm25 = parseFloat(r[2]);\n        var pm10 = parseFloat(r[3]);\n\n        if (!isNaN(pm1) && !isNaN(pm25) && !isNaN(pm10)) {\n            sumPM1 += pm1;\n            sumPM25 += pm25;\n            sumPM10 += pm10;\n            count++;\n        }\n    }\n});\n\nvar avgPM1 = 0;\nvar avgPM25 = 0;\nvar avgPM10 = 0;\n\nif (count > 0) {\n    avgPM1 = sumPM1 / count;\n    avgPM25 = sumPM25 / count;\n    avgPM10 = sumPM10 / count;\n}\n\nmsg.payload = [\n    new Date().toLocaleString(\"th-TH\", { timeZone: \"Asia/Bangkok\" }),\n    Number(avgPM1.toFixed(2)),\n    Number(avgPM25.toFixed(2)),\n    Number(avgPM10.toFixed(2))\n];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -782,7 +761,7 @@
         "cells": "hourly_summary!A:D",
         "flatten": false,
         "name": "Get hourly_summary",
-        "x": 720,
+        "x": 740,
         "y": 540,
         "wires": [
             [
@@ -840,8 +819,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 200,
-        "y": 520,
+        "x": 260,
+        "y": 540,
         "wires": [
             [
                 "6f7a590c0341f347"
@@ -978,6 +957,74 @@
         "wires": [
             [
                 "9687f5022841728c"
+            ]
+        ]
+    },
+    {
+        "id": "d1a8d9614138a411",
+        "type": "function",
+        "z": "86c1cce0024c0f35",
+        "name": "function 9",
+        "func": "var data = msg.payload;\n\n// ถ้าไม่มีข้อมูลเลย\nif (!data || data.length === 0) {\n    msg.payload = { max: \"-\", min: \"-\", avg: \"-\" };\n    return msg;\n}\n\n// วันที่ปัจจุบัน\nvar now = new Date();\nvar day = now.getDate();\nvar month = now.getMonth() + 1;\nvar year = now.getFullYear();\n\nvar todayString = day + \"/\" + month + \"/\" + year;\n\n// กรองเฉพาะแถวของวันนี้\nvar todayRows = data.filter(row => {\n    if (!row[0]) return false;\n    return row[0].startsWith(todayString);\n});\n\n// ดึงค่า PM2.5 (สมมติอยู่คอลัมน์ที่ 2 → index 1)\nvar values = todayRows\n    .map(row => Number(row[2]))\n    .filter(v => !isNaN(v));\n\nif (values.length === 0) {\n    msg.payload = { max: \"-\", min: \"-\", avg: \"-\" };\n    return msg;\n}\n\nvar max = Math.max(...values);\nvar min = Math.min(...values);\nvar sum = values.reduce((a, b) => a + b, 0);\nvar avg = (sum / values.length).toFixed(1);\n\nmsg.payload = {\n    max: max,\n    min: min,\n    avg: avg\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 1020,
+        "wires": [
+            [
+                "b473d0e706690651"
+            ]
+        ]
+    },
+    {
+        "id": "6c68300c925dd801",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "2c61e574686c476a",
+        "method": "get",
+        "action": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "raw_data!A:D",
+        "flatten": false,
+        "name": "Get raw_data",
+        "x": 720,
+        "y": 1020,
+        "wires": [
+            [
+                "d1a8d9614138a411"
+            ]
+        ]
+    },
+    {
+        "id": "cd69f8ecc6277e87",
+        "type": "inject",
+        "z": "86c1cce0024c0f35",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 470,
+        "y": 1020,
+        "wires": [
+            [
+                "6c68300c925dd801"
             ]
         ]
     }
