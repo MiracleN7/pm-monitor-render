@@ -307,8 +307,8 @@
         "y": 180,
         "wires": [
             [
-                "d5f03abc92e5b379",
-                "de82f3cc5d5aba65"
+                "de82f3cc5d5aba65",
+                "7a9901166c5bf714"
             ]
         ]
     },
@@ -352,7 +352,7 @@
         "label": "24H Summary",
         "chartType": "line",
         "legend": "true",
-        "xformat": "HH:mm:ss",
+        "xformat": "HH:mm",
         "interpolate": "linear",
         "nodata": "",
         "dot": true,
@@ -378,7 +378,7 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 1320,
+        "x": 1400,
         "y": 300,
         "wires": [
             []
@@ -400,7 +400,7 @@
         "templateScope": "local",
         "className": "",
         "x": 970,
-        "y": 420,
+        "y": 400,
         "wires": [
             []
         ]
@@ -461,7 +461,7 @@
         "templateScope": "local",
         "className": "",
         "x": 970,
-        "y": 460,
+        "y": 440,
         "wires": [
             []
         ]
@@ -501,7 +501,7 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1220,
+        "x": 1180,
         "y": 480,
         "wires": [
             []
@@ -543,29 +543,9 @@
         "templateScope": "local",
         "className": "",
         "x": 980,
-        "y": 540,
+        "y": 520,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "d5f03abc92e5b379",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "function 6",
-        "func": "// ล้างข้อมูลรายชั่วโมง\ncontext.set(\"hourData\", {});\ncontext.set(\"lastHour\", null);\n\n// สั่งล้างกราฟ Hourly Summary\nmsg.ui_control = { clear: true };\n\n// ไม่ต้องส่ง payload\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 940,
-        "y": 180,
-        "wires": [
-            [
-                "7a9901166c5bf714"
-            ]
         ]
     },
     {
@@ -654,7 +634,7 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "function 8",
-        "func": "let now = new Date().toISOString();\nlet data = msg.payload;\n\nlet pm1 = 0;\nlet pm25 = 0;\nlet pm10 = 0;\n\n// ===== กรณีเป็น JSON object =====\nif (typeof data === \"object\") {\n    pm1 = Number(data.PM1) || 0;\n    pm25 = Number(data.PM25) || 0;\n    pm10 = Number(data.PM10) || 0;\n}\n\n// ===== กรณีเป็น string =====\nelse if (typeof data === \"string\") {\n\n    let matchPM1 = data.match(/PM1:(\\d+)/);\n    let matchPM25 = data.match(/PM2\\.5:(\\d+)/);\n    let matchPM10 = data.match(/PM10:(\\d+)/);\n\n    if (matchPM1) pm1 = Number(matchPM1[1]);\n    if (matchPM25) pm25 = Number(matchPM25[1]);\n    if (matchPM10) pm10 = Number(matchPM10[1]);\n}\n\nmsg.payload = [\n    [now, pm1, pm25, pm10]\n];\n\nreturn msg;",
+        "func": "let now = new Date().toLocaleString(\"sv-SE\", {\n    timeZone: \"Asia/Bangkok\"\n});\nlet data = msg.payload;\n\nlet pm1 = 0;\nlet pm25 = 0;\nlet pm10 = 0;\n\n// ===== กรณีเป็น JSON object =====\nif (typeof data === \"object\") {\n    pm1 = Number(data.PM1) || 0;\n    pm25 = Number(data.PM25) || 0;\n    pm10 = Number(data.PM10) || 0;\n}\n\n// ===== กรณีเป็น string =====\nelse if (typeof data === \"string\") {\n\n    let matchPM1 = data.match(/PM1:(\\d+)/);\n    let matchPM25 = data.match(/PM2\\.5:(\\d+)/);\n    let matchPM10 = data.match(/PM10:(\\d+)/);\n\n    if (matchPM1) pm1 = Number(matchPM1[1]);\n    if (matchPM25) pm25 = Number(matchPM25[1]);\n    if (matchPM10) pm10 = Number(matchPM10[1]);\n}\n\nmsg.payload = [\n    [now, pm1, pm25, pm10]\n];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -674,14 +654,14 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Format 24H Chart",
-        "func": "let rows = msg.payload || [];\n\n// ตรวจสอบว่ามีข้อมูลจริงหรือไม่ (ต้องมีมากกว่า 1 แถวเพราะแถวแรกเป็น Header)\nif (!Array.isArray(rows) || rows.length < 2) {\n    node.status({fill:\"yellow\", shape:\"ring\", text:\"No data in sheet\"});\n    // ส่งโครงสร้างว่างเพื่อให้ Chart ไม่ Error\n    msg.payload = [{ series: [\"PM1\", \"PM2.5\", \"PM10\"], data: [[], [], []], labels: [] }];\n    return msg; \n}\n\n// กรองเอาเฉพาะแถวที่มีข้อมูลครบ\nlet dataRows = rows.slice(1).filter(r => Array.isArray(r) && r.length >= 4);\n\n// เรียงตามเวลา\ndataRows.sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());\n\n// ตัดเอาเฉพาะจำนวนที่ต้องการ (24 หรือ 30 ตามประเภทโหนด)\nlet limit = (node.name === \"Format 24H Chart\") ? -24 : -30;\ndataRows = dataRows.slice(limit);\n\nlet labels = [];\nlet pm1 = [];\nlet pm25 = [];\nlet pm10 = [];\n\ndataRows.forEach(r => {\n    labels.push(new Date(r[0]).toLocaleTimeString(\"th-TH\", {hour: '2-digit', minute:'2-digit'}));\n    pm1.push(Number(r[1]) || 0);\n    pm25.push(Number(r[2]) || 0);\n    pm10.push(Number(r[3]) || 0);\n});\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: labels\n}];\n\nnode.status({fill:\"green\", shape:\"dot\", text:\"Data updated\"});\nreturn msg;",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows) || rows.length < 2) {\n    return null;\n}\n\nrows = rows.slice(1);\n\nrows.sort(function (a, b) {\n    var d1 = new Date(a[0]).getTime();\n    var d2 = new Date(b[0]).getTime();\n    return d1 - d2;\n});\n\nrows = rows.slice(-24);\n\nvar pm1 = [];\nvar pm25 = [];\nvar pm10 = [];\n\nfor (var i = 0; i < rows.length; i++) {\n\n    var r = rows[i];\n    var date = new Date(r[0]);\n\n    pm1.push({ x: date, y: Number(r[1]) || 0 });\n    pm25.push({ x: date, y: Number(r[2]) || 0 });\n    pm10.push({ x: date, y: Number(r[3]) || 0 });\n\n}  // <<< ปิดตรงนี้\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: [\"\"]\n}];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1130,
+        "x": 1050,
         "y": 300,
         "wires": [
             [
@@ -694,15 +674,15 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Format 30D Chart",
-        "func": "let rows = msg.payload || [];\n\n// ตรวจสอบว่ามีข้อมูลจริงหรือไม่ (ต้องมีมากกว่า 1 แถวเพราะแถวแรกเป็น Header)\nif (!Array.isArray(rows) || rows.length < 2) {\n    node.status({fill:\"yellow\", shape:\"ring\", text:\"No data in sheet\"});\n    // ส่งโครงสร้างว่างเพื่อให้ Chart ไม่ Error\n    msg.payload = [{ series: [\"PM1\", \"PM2.5\", \"PM10\"], data: [[], [], []], labels: [] }];\n    return msg; \n}\n\n// กรองเอาเฉพาะแถวที่มีข้อมูลครบ\nlet dataRows = rows.slice(1).filter(r => Array.isArray(r) && r.length >= 4);\n\n// เรียงตามเวลา\ndataRows.sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());\n\n// ตัดเอาเฉพาะจำนวนที่ต้องการ (24 หรือ 30 ตามประเภทโหนด)\nlet limit = (node.name === \"Format 30D Chart\") ? -24 : -30;\ndataRows = dataRows.slice(limit);\n\nlet labels = [];\nlet pm1 = [];\nlet pm25 = [];\nlet pm10 = [];\n\ndataRows.forEach(r => {\n    labels.push(new Date(r[0]).toLocaleTimeString(\"th-TH\", {hour: '2-digit', minute:'2-digit'}));\n    pm1.push(Number(r[1]) || 0);\n    pm25.push(Number(r[2]) || 0);\n    pm10.push(Number(r[3]) || 0);\n});\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: labels\n}];\n\nnode.status({fill:\"green\", shape:\"dot\", text:\"Data updated\"});\nreturn msg;",
+        "func": "let rows = msg.payload || [];\n\n// ตรวจสอบว่ามีข้อมูลจริงหรือไม่ (ต้องมีมากกว่า 1 แถวเพราะแถวแรกเป็น Header)\nif (!Array.isArray(rows) || rows.length < 2) {\n    node.status({fill:\"yellow\", shape:\"ring\", text:\"No data in sheet\"});\n    // ส่งโครงสร้างว่างเพื่อให้ Chart ไม่ Error\n    msg.payload = [{ series: [\"PM1\", \"PM2.5\", \"PM10\"], data: [[], [], []], labels: [] }];\n    return msg; \n}\n\n// กรองเอาเฉพาะแถวที่มีข้อมูลครบ\nlet dataRows = rows.slice(1).filter(r => Array.isArray(r) && r.length >= 4);\n\n// เรียงตามเวลา\ndataRows.sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());\n\n// ตัดเอาเฉพาะจำนวนที่ต้องการ (24 หรือ 30 ตามประเภทโหนด)\nlet limit = -30;\ndataRows = dataRows.slice(limit);\n\nlet labels = [];\nlet pm1 = [];\nlet pm25 = [];\nlet pm10 = [];\n\ndataRows.forEach(r => {\n    labels.push(new Date(r[0]).toLocaleTimeString(\"th-TH\", {hour: '2-digit', minute:'2-digit'}));\n    pm1.push(Number(r[1]) || 0);\n    pm25.push(Number(r[2]) || 0);\n    pm10.push(Number(r[3]) || 0);\n});\n\nmsg.payload = [{\n    series: [\"PM1\", \"PM2.5\", \"PM10\"],\n    data: [pm1, pm25, pm10],\n    labels: labels\n}];\n\nnode.status({fill:\"green\", shape:\"dot\", text:\"Data updated\"});\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1090,
-        "y": 140,
+        "x": 1170,
+        "y": 100,
         "wires": [
             [
                 "045de5d3636534cd"
@@ -739,26 +719,6 @@
         ]
     },
     {
-        "id": "e4a1620bdde9570c",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "function 10",
-        "func": "if (!msg.payload || msg.payload === \"undefined\") {\n    return null;\n}\n\nif (!Array.isArray(msg.payload)) {\n    return null;\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 950,
-        "y": 300,
-        "wires": [
-            [
-                "64dabc163a8865d7"
-            ]
-        ]
-    },
-    {
         "id": "066526f5b7e012cd",
         "type": "switch",
         "z": "86c1cce0024c0f35",
@@ -787,15 +747,15 @@
         "type": "function",
         "z": "86c1cce0024c0f35",
         "name": "Sheet Hourly Average",
-        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows)) return null;\nif (rows.length < 2) return null; // ไม่มีข้อมูล\n\nrows.shift(); // ลบ header\n\nvar oneHourAgo = Date.now() - (60 * 60 * 1000);\n\nvar sum1 = 0, sum25 = 0, sum10 = 0, count = 0;\n\nrows.forEach(r => {\n    if (!r[0]) return;\n\n    var t = new Date(r[0]).getTime();\n    if (!isNaN(t) && t >= oneHourAgo) {\n        sum1 += Number(r[1]) || 0;\n        sum25 += Number(r[2]) || 0;\n        sum10 += Number(r[3]) || 0;\n        count++;\n    }\n});\n\nif (count === 0) return null;\n\nmsg.payload = [\n    [\n        new Date().toISOString(),\n        (sum1 / count).toFixed(1),\n        (sum25 / count).toFixed(1),\n        (sum10 / count).toFixed(1)\n    ]\n];\nnode.warn(JSON.stringify(msg.payload));\nreturn msg;",
+        "func": "var rows = msg.payload;\n\nif (!Array.isArray(rows)) return null;\nif (rows.length < 2) return null; // ไม่มีข้อมูล\n\nrows.shift(); // ลบ header\n\nvar oneHourAgo = Date.now() - (60 * 60 * 1000);\n\nvar sum1 = 0, sum25 = 0, sum10 = 0, count = 0;\n\nrows.forEach(r => {\n    if (!r[0]) return;\n\n    var t = new Date(r[0]).getTime();\n    if (!isNaN(t) && t >= oneHourAgo) {\n        sum1 += Number(r[1]) || 0;\n        sum25 += Number(r[2]) || 0;\n        sum10 += Number(r[3]) || 0;\n        count++;\n    }\n});\n\nif (count === 0) return null;\n\nmsg.payload = [[\n    new Date().toLocaleString(\"sv-SE\", {\n        timeZone: \"Asia/Bangkok\"\n    }),\n    (sum1 / count).toFixed(1),\n    (sum25 / count).toFixed(1),\n    (sum10 / count).toFixed(1)\n]];\nnode.warn(JSON.stringify(msg.payload));\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 780,
-        "y": 660,
+        "x": 460,
+        "y": 120,
         "wires": [
             [
                 "6ae01ecdfe7a9dc9"
@@ -813,11 +773,51 @@
         "cells": "raw_data!A:D",
         "flatten": false,
         "name": "Get raw_data",
-        "x": 360,
-        "y": 660,
+        "x": 280,
+        "y": 60,
         "wires": [
             [
-                "42e03ce005c0a9d6"
+                "bece90e5dd28be29",
+                "4925930b5d93b847"
+            ]
+        ]
+    },
+    {
+        "id": "6ae01ecdfe7a9dc9",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "64991135615702ea",
+        "method": "append",
+        "action": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "hourly_summary!A:D",
+        "flatten": false,
+        "name": "hourly_summary",
+        "x": 440,
+        "y": 320,
+        "wires": [
+            [
+                "6f7a590c0341f347",
+                "b5a55bed677c230c"
+            ]
+        ]
+    },
+    {
+        "id": "6f7a590c0341f347",
+        "type": "GSheet",
+        "z": "86c1cce0024c0f35",
+        "creds": "47449cdc6b79ea00",
+        "method": "get",
+        "action": "",
+        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
+        "cells": "hourly_summary!A:D",
+        "flatten": false,
+        "name": "Get hourly_summary",
+        "x": 740,
+        "y": 300,
+        "wires": [
+            [
+                "64dabc163a8865d7"
             ]
         ]
     },
@@ -842,8 +842,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 160,
-        "y": 620,
+        "x": 100,
+        "y": 100,
         "wires": [
             [
                 "3de50718be1a22ed"
@@ -851,30 +851,10 @@
         ]
     },
     {
-        "id": "42e03ce005c0a9d6",
-        "type": "function",
-        "z": "86c1cce0024c0f35",
-        "name": "function 9",
-        "func": "if (!msg.payload || msg.payload === \"undefined\") {\n    return null;\n}\n\nif (!Array.isArray(msg.payload)) {\n    return null;\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 560,
-        "y": 660,
-        "wires": [
-            [
-                "4925930b5d93b847"
-            ]
-        ]
-    },
-    {
-        "id": "f809986c85ea59ab",
+        "id": "5138a544f114fa0a",
         "type": "inject",
         "z": "86c1cce0024c0f35",
-        "name": "reset hourly",
+        "name": "",
         "props": [
             {
                 "p": "payload"
@@ -884,15 +864,15 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
-        "crontab": "00 00 * * *",
-        "once": false,
+        "repeat": "3600",
+        "crontab": "",
+        "once": true,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 490,
-        "y": 260,
+        "x": 530,
+        "y": 240,
         "wires": [
             [
                 "6f7a590c0341f347"
@@ -900,42 +880,20 @@
         ]
     },
     {
-        "id": "6ae01ecdfe7a9dc9",
-        "type": "GSheet",
+        "id": "b5a55bed677c230c",
+        "type": "debug",
         "z": "86c1cce0024c0f35",
-        "creds": "64991135615702ea",
-        "method": "append",
-        "action": "",
-        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
-        "cells": "hourly_summary!A:D",
-        "flatten": false,
-        "name": "hourly_summary",
-        "x": 1020,
-        "y": 660,
-        "wires": [
-            [
-                "7a9901166c5bf714"
-            ]
-        ]
-    },
-    {
-        "id": "6f7a590c0341f347",
-        "type": "GSheet",
-        "z": "86c1cce0024c0f35",
-        "creds": "47449cdc6b79ea00",
-        "method": "get",
-        "action": "",
-        "sheet": "1aZN_eEUDGyOsjyslA42A-W3EbSq5chobLTYqEGifaf4",
-        "cells": "hourly_summary!A:D",
-        "flatten": false,
-        "name": "Get hourly_summary",
-        "x": 740,
-        "y": 300,
-        "wires": [
-            [
-                "bece90e5dd28be29",
-                "e4a1620bdde9570c"
-            ]
-        ]
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 180,
+        "wires": []
     }
 ]
