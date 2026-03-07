@@ -2,10 +2,9 @@ module.exports = {
 
     uiPort: process.env.PORT || 1880,
 
-    httpAdminRoot: "/",
+    httpAdminRoot: "/admin",
     httpNodeRoot: "/api",
 
-    // 🔥 ใช้ Disk ถาวร
     userDir: "/data",
     flowFile: "flows.json",
 
